@@ -13,7 +13,7 @@ message Op {
 	oneof op {
 		ExecOp exec = 2;
 		SourceOp source = 3;
-		CopyOp copy = 4;
+		FileOp file = 4;
 		BuildOp build = 5;
 	}
 	Platform platform = 10;
@@ -93,15 +93,64 @@ enum CacheSharingOpt {
 }
 
 // CopyOp copies files across Ops.
-message CopyOp {
-	repeated CopySource src = 1;
-	string dest = 2;
+message FileOp {
+	repeated FileTarget targets = 1;
+	repeated FileAction actions = 2;
 }
 
-// CopySource specifies a source for CopyOp.
-message CopySource {
-	int64 input = 1 [(gogoproto.customtype) = "InputIndex", (gogoproto.nullable) = false];
-	string selector = 2;
+message FileTarget {
+	int64 input = 1 [(gogoproto.customtype) = "InputIndex", (gogoproto.nullable) = false]; // could be real input or target (target index + max input index)
+	int64 output = 2 [(gogoproto.customtype) = "OutputIndex", (gogoproto.nullable) = false];
+}
+
+message FileAction {
+	int64 input = 1 [(gogoproto.customtype) = "InputIndex", (gogoproto.nullable) = false]; // could be real input or target (target index + max input index)
+	int64 target = 2; // index from target array
+	oneof action {
+		FileActionCopy copy = 3;
+		FileActionMkFile mkfile = 4;
+		FileActionMkDir mkdir = 5;
+		FileActionRm rm = 6;
+	}
+}
+
+message FileActionCopy {
+	string src = 1;
+	string dest = 2;
+	ChownOpt owner = 4;
+	int64 mode = 5 [(gogoproto.nullable) = true];
+	bool followSymlink = 6;
+	bool dirCopyContents = 7;
+	bool attemptUnpack = 8;
+	bool createDestPath = 9;
+}
+
+message FileActionMkFile {
+	string path = 1;
+	int64 mode = 2;
+	bytes data = 3;
+	ChownOpt owner = 4;
+}
+
+message FileActionMkDir {
+	string path = 1;
+	uint32 mode = 2;
+	ChownOpt owner = 4;
+}
+
+message FileActionRm {
+	string path = 1;
+}
+
+message ChownOpt {
+	UserOpt user = 1;
+	UserOpt group = 2;
+}
+
+message UserOpt {
+	string name = 1;
+	int64 input = 2; // input that contains /etc/passwd if using a name
+	int64 id = 3;
 }
 
 // SourceOp specifies a source such as build contexts and images.

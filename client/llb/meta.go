@@ -16,6 +16,7 @@ var (
 	keyDir      = contextKeyT("llb.exec.dir")
 	keyEnv      = contextKeyT("llb.exec.env")
 	keyUser     = contextKeyT("llb.exec.user")
+	keyMkdir    = contextKeyT("llb.file.mkdir")
 	keyPlatform = contextKeyT("llb.platform")
 )
 
@@ -44,6 +45,12 @@ func dirf(str string, v ...interface{}) StateOption {
 			value = path.Join(prev, value)
 		}
 		return s.WithValue(keyDir, value)
+	}
+}
+
+func mkdir(newDir FileActionMkDir) StateOption {
+	return func(s State) State {
+		return s.WithValue(keyMkdir, newDir)
 	}
 }
 

@@ -4,6 +4,8 @@ import (
 	"flag"
 	"os"
 
+	"fmt"
+
 	"github.com/moby/buildkit/client/llb"
 	"github.com/moby/buildkit/util/system"
 )
@@ -21,9 +23,10 @@ func main() {
 	flag.StringVar(&opt.runc, "runc", "dd56ece8236d6d9e5bed4ea0c31fe53c7b873ff4", "runc version")
 	flag.Parse()
 
-	bk := buildkit(opt)
-	out := bk.Run(llb.Shlex("ls -l /bin")) // debug output
-
+	//bk := buildkit(opt)
+	bk := llb.Image("docker.io/library/alpine:latest").File(llb.Mkdir("/mydir/test", 777))
+	out := bk.Run(llb.Shlex("ls -l /bin"), llb.Shlexf("aaa sss -qqq -fff"), llb.AddEnv("QWE", "E222")).Run(llb.Shlexf("df -lh")) // debug output
+	fmt.Printf("ctx -> %+v in type %T", out.State.Value("llb.exec.env"), out.State.Value("llb.exec.env"))
 	dt, err := out.Marshal(llb.LinuxAmd64)
 	if err != nil {
 		panic(err)
@@ -36,6 +39,7 @@ func goBuildBase() llb.State {
 	return goAlpine.
 		AddEnv("PATH", "/usr/local/go/bin:"+system.DefaultPathEnv).
 		AddEnv("GOPATH", "/go").
+		//File(llb.Mkdir("/dir/test")).
 		Run(llb.Shlex("apk add --no-cache g++ linux-headers")).
 		Run(llb.Shlex("apk add --no-cache git libseccomp-dev make")).Root()
 }

@@ -173,6 +173,17 @@ func (s State) Run(ro ...RunOption) ExecState {
 	}
 }
 
+func (s State) File(fo ...FileOption) State {
+	//fi := &FileInfo{State: s}
+	var fa []FileActions
+	for _, f := range fo {
+		f(fa)
+		f.SetFileOption(fa)
+	}
+	file := NewFileOp(s.Output(), fa)
+	return s.WithOutput(file.Output())
+}
+
 func (s State) AddEnv(key, value string) State {
 	return s.AddEnvf(key, value)
 }

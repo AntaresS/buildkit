@@ -24,7 +24,7 @@ const (
 // Dialer returns a connection that can be used by the session
 type Dialer func(ctx context.Context, proto string, meta map[string][]string) (net.Conn, error)
 
-// Attachable defines a feature that can be expsed on a session
+// Attachable defines a feature that can be exposed on a session
 type Attachable interface {
 	Register(*grpc.Server)
 }
